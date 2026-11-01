@@ -1,8 +1,10 @@
 import { ProductForm } from "../product-form";
+import { requireAdminPage } from "@/lib/require-admin";
 
 export const metadata = { title: "Tambah produk · Admin" };
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  await requireAdminPage();
   return (
     <>
       <h1>Tambah produk</h1>

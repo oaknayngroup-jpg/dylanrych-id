@@ -1,15 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import { prisma } from "@/lib/prisma";
+import { CATALOG_PRODUCTS } from "@/lib/catalog";
 
-export const dynamic = "force-dynamic";
-
-export default async function HomePage() {
-  const products = await prisma.product.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
+export default function HomePage() {
+  const products = CATALOG_PRODUCTS;
 
   return (
     <>

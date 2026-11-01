@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Promo · Admin" };
 
 export default async function AdminPromosPage() {
+  await requireAdminPage();
   const promos = await prisma.promo.findMany({ orderBy: { createdAt: "desc" } });
 
   return (

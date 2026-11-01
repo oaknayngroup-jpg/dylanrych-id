@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 
 const COOKIE_NAME = "dylanrych_admin_session";
 const SESSION_DAYS = 7;
+
+export { COOKIE_NAME };
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
@@ -61,6 +62,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
   if (!token) return null;
+  if (!process.env.AUTH_SECRET) return null;
 
   try {
     const { payload } = await jwtVerify(token, getSecret());
@@ -85,6 +87,7 @@ export async function requireAdminSession(): Promise<AdminSession> {
 }
 
 export async function authenticateAdmin(email: string, password: string) {
+  const { prisma } = await import("@/lib/prisma");
   const admin = await prisma.adminUser.findUnique({ where: { email } });
   if (!admin) return null;
   const ok = await verifyPassword(password, admin.passwordHash);

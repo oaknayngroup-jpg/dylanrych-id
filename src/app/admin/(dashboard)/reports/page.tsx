@@ -1,10 +1,12 @@
 import { formatIdr } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Laporan · Admin" };
 
 export default async function AdminReportsPage() {
+  await requireAdminPage();
   const [paidOrders, topItems] = await Promise.all([
     prisma.order.findMany({
       where: { paymentStatus: "SETTLEMENT" },
