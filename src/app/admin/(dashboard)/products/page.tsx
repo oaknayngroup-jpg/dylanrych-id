@@ -2,12 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatIdr } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 import { DeleteProductButton } from "./delete-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Produk · Admin" };
 
 export default async function AdminProductsPage() {
+  await requireAdminPage();
   const products = await prisma.product.findMany({
     orderBy: { sortOrder: "asc" },
   });

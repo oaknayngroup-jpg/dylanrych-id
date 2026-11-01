@@ -1,10 +1,12 @@
 import { formatIdr } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Pesanan · Admin" };
 
 export default async function AdminOrdersPage() {
+  await requireAdminPage();
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     take: 50,

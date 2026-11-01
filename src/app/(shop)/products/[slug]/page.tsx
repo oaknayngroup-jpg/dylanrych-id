@@ -2,24 +2,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { CATALOG_PRODUCTS } from "@/lib/catalog";
 import { formatIdr } from "@/lib/format";
-import { prisma } from "@/lib/prisma";
-
-export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export function generateStaticParams() {
+  return CATALOG_PRODUCTS.map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({ where: { slug } });
+  const product = CATALOG_PRODUCTS.find((p) => p.slug === slug);
   if (!product) return { title: "Produk" };
   return { title: product.name, description: product.description };
 }
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({ where: { slug } });
-  if (!product || !product.active) notFound();
+  const product = CATALOG_PRODUCTS.find((p) => p.slug === slug && p.active);
+  if (!product) notFound();
 
   return (
     <div className="page-shell">

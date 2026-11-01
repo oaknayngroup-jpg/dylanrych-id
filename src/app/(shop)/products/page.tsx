@@ -1,14 +1,10 @@
 import { ProductCard } from "@/components/product-card";
-import { prisma } from "@/lib/prisma";
+import { CATALOG_PRODUCTS } from "@/lib/catalog";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Koleksi" };
 
-export default async function ProductsPage() {
-  const products = await prisma.product.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
+export default function ProductsPage() {
+  const products = CATALOG_PRODUCTS;
 
   return (
     <div className="page-shell">

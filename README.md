@@ -5,7 +5,7 @@ Custom Next.js shop for **Dylanrych.id**: 4 Extrait de Parfum aromas, Midtrans S
 ## Stack
 
 - **Next.js 15** (App Router) + TypeScript + Tailwind CSS v4
-- **Prisma** + **SQLite** for local demo (Postgres-ready — switch provider for Vercel)
+- **Prisma** + **PostgreSQL** (Neon / Prisma Postgres / Vercel Postgres / Supabase)
 - Admin auth: signed HTTP-only cookie (jose + bcrypt)
 - Payments: Midtrans Snap client stub (`src/lib/midtrans.ts`)
 - Shipping: JNT ongkir/booking stub (`src/lib/jnt.ts`)
@@ -25,9 +25,15 @@ Every purchase includes **1 tester** (not a separate SKU).
 
 ```bash
 cp .env.example .env
+# Option A — temporary Postgres (no signup, ~24h unless claimed):
+npx create-db@latest
+# paste the connection string into DATABASE_URL in .env
+
+# Option B — Neon / Supabase / Vercel Postgres connection string in .env
+
 npm install
-npm run db:push      # create SQLite schema
-npm run db:seed      # 4 products + super admin
+npx prisma db push
+npm run db:seed
 npm run dev
 ```
 
@@ -51,7 +57,7 @@ Open:
 
 See `.env.example`. Important:
 
-- `DATABASE_URL` — SQLite file locally; Postgres URL in production
+- `DATABASE_URL` — Postgres connection string (required)
 - `AUTH_SECRET` — cookie signing secret
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — used only by seed
 - `MIDTRANS_*` — optional for now (stubs return fake Snap tokens)
@@ -70,23 +76,46 @@ public/products/    # aroma images
 
 ## Deploy on Vercel
 
-1. Push this repo and import in Vercel (framework: Next.js).
-2. Create a Postgres DB (Neon or Supabase) and set `DATABASE_URL`.
-3. In `prisma/schema.prisma`, change `provider = "sqlite"` → `"postgresql"`.
-4. Set env vars from `.env.example` (`AUTH_SECRET`, admin seed vars, Midtrans/JNT when ready).
-5. Build command can stay default; add a post-build or Vercel deploy hook to run:
-   ```bash
-   npx prisma db push && npm run db:seed
-   ```
-   (or use migrations once you lock the schema).
-6. Point **dylanrych.id** DNS (Hostinger) to Vercel — Hostinger stays DNS/email only; the app runs on Vercel.
+### One-time (GitHub → Vercel)
 
-## Current scope (this PR)
+1. Import **oaknayngroup-jpg/dylanrych-id** in [Vercel](https://vercel.com/new) (framework: Next.js).
+2. Create Postgres (recommended: [Neon](https://neon.tech) free, or Prisma Postgres / Vercel Postgres).
+3. In Vercel → Project → Settings → Environment Variables, set:
+   - `DATABASE_URL` = Postgres URL (`?sslmode=require`)
+   - `AUTH_SECRET` = long random string
+   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` (for seed)
+   - `NEXT_PUBLIC_SITE_URL` = `https://YOUR-PROJECT.vercel.app` (later `https://dylanrych.id`)
+4. Deploy. Then from your machine (with the same `DATABASE_URL`):
+   ```bash
+   npx prisma db push
+   npm run db:seed
+   ```
+5. **Hostinger DNS** (later, when going live on dylanrych.id):
+   - Keep Hostinger for DNS + email only
+   - In Vercel → Domains → add `dylanrych.id` + `www`
+   - At Hostinger DNS: point A/CNAME records as Vercel instructs
+   - Do **not** try to host Next.js on Hostinger Premium shared
+
+### CLI without Vercel account (temporary preview)
+
+```bash
+# Needs DATABASE_URL + AUTH_SECRET in env (or .env)
+npx vercel deploy --temporary --yes \
+  --env DATABASE_URL="$DATABASE_URL" \
+  --env AUTH_SECRET="$AUTH_SECRET" \
+  --build-env DATABASE_URL="$DATABASE_URL" \
+  --build-env AUTH_SECRET="$AUTH_SECRET"
+```
+
+Claim the printed claim URL to keep the deployment (otherwise it expires).
+
+## Current scope
 
 - Scaffold + DB models + seed
 - Public landing / product list & detail / cart shell
 - Admin login + product CRUD + orders/promos/reports placeholders
 - Midtrans + JNT stubs with clear TODOs
+- Postgres + Vercel deploy path
 
 **Not yet:** live Midtrans checkout, JNT booking after settlement, promo CRUD UI, CSV export.
 

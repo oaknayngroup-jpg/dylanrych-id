@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { formatIdr } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
 
 export default async function AdminDashboardPage() {
+  await requireAdminPage();
   const [productCount, orderCount, promoCount, paidAgg] = await Promise.all([
     prisma.product.count(),
     prisma.order.count(),

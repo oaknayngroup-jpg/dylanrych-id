@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requireAdminPage } from "@/lib/require-admin";
 import { ProductForm } from "../../product-form";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function EditProductPage({ params }: Props) {
+  await requireAdminPage();
   const { id } = await params;
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) notFound();
